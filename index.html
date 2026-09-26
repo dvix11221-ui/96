@@ -4,19 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>اليوم الوطني السعودي ٩٦</title>
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0a3d28">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="My app">
-<link rel="apple-touch-icon" href="icon-192.png">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=Amiri:wght@400;700&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
 <style>
+:root{
+  --ink:#03110a; --green-900:#0a3d28; --green-700:#0f5c3b; --green-500:#1c7a52;
+  --gold:#c9a227; --gold-light:#e3c368; --sand:#efe6cf; --white:#ffffff;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%; overflow-x:hidden;}
+body{
+  font-family:'Tajawal',sans-serif;
+  background:#000;
+  color:var(--sand); min-height:100vh; position:relative;
 }
 .stars{position:fixed; inset:0 0 45% 0; overflow:hidden; z-index:0; pointer-events:none;}
 .star{position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; opacity:.5; animation:tw 3.4s infinite ease-in-out;}
@@ -101,6 +104,18 @@ footer{position:relative; z-index:2; text-align:center; padding:18vh 0 5vh; font
 }
 .sound-btn:focus-visible{outline:2px solid var(--gold);}
 
+.start-overlay{
+  position:fixed; inset:0; z-index:10;
+  background:#000;
+  display:flex; align-items:center; justify-content:center;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+.start-overlay.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+.start-btn{
+  font-family:'Cairo',sans-serif; font-weight:600; font-size:clamp(18px,2.4vw,22px);
+  color:#ffffff; background:none; border:none; cursor:pointer; letter-spacing:.01em;
+}
+
 @media (prefers-reduced-motion: reduce){
   .jet,.star,.burst::before,.burst::after,h1,.tagline,.eyebrow,.crest,.date,.rule,.trace path{
     animation:none !important; opacity:1 !important; transform:none !important; stroke-dashoffset:0 !important;
@@ -110,6 +125,10 @@ footer{position:relative; z-index:2; text-align:center; padding:18vh 0 5vh; font
 </style>
 </head>
 <body>
+
+<div class="start-overlay" id="startOverlay">
+  <button class="start-btn" id="startBtn">click to enter...</button>
+</div>
 
 <div class="stars" id="stars"></div>
 <video class="hero-video" autoplay muted loop playsinline>
@@ -188,8 +207,11 @@ for(let i=0;i<60;i++){
 }
 
 const audio = document.getElementById('realAudio');
+const video = document.querySelector('.hero-video');
 let on = false;
 const btn = document.getElementById('soundBtn');
+const startOverlay = document.getElementById('startOverlay');
+const startBtn = document.getElementById('startBtn');
 
 function setOn(){
   on = true;
@@ -201,16 +223,15 @@ function setOff(){
   btn.textContent = '🔇';
   btn.setAttribute('aria-label', 'تشغيل الصوت');
 }
-audio.play().then(setOn).catch(setOff);
-function firstInteraction(){
-  if(!on){ audio.currentTime = 0; audio.play().then(setOn).catch(()=>{}); }
-  window.removeEventListener('pointerdown', firstInteraction);
-  window.removeEventListener('keydown', firstInteraction);
-  window.removeEventListener('scroll', firstInteraction);
-}
-window.addEventListener('pointerdown', firstInteraction, {once:true});
-window.addEventListener('keydown', firstInteraction, {once:true});
-window.addEventListener('scroll', firstInteraction, {once:true, passive:true});
+
+startOverlay.addEventListener('click', () => {
+  startOverlay.classList.add('hidden');
+  video.muted = false;
+  video.currentTime = 0;
+  video.play().catch(()=>{});
+  audio.currentTime = 0;
+  audio.play().then(setOn).catch(setOff);
+});
 
 btn.addEventListener('click', () => {
   if (on) {
@@ -222,11 +243,6 @@ btn.addEventListener('click', () => {
   }
 });
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(console.error);
-  });
-}
 </script>
 </body>
 </html>
